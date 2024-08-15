@@ -51,6 +51,11 @@ var MasterMath = /** @class */ (function () {
         translate(this.center.x, this.center.y);
         // @ts-ignore
         scale(1, -1);
+        this.fixedMousePointer = new Point(
+        // @ts-ignore
+        mouseX - this.center.x, 
+        // @ts-ignore
+        -(mouseY - this.center.y)).magnify(this.focus, 1 / this.scope);
         // @ts-ignore
         stroke("white");
         // @ts-ignore
@@ -199,6 +204,20 @@ var Circle = /** @class */ (function (_super) {
         _this.radius = radius;
         return _this;
     }
+    Circle.prototype.getIntersectionWithLinearFunction = function (linear) {
+        var _a = linear.args, a = _a[0], b = _a[1], c = _a[2];
+        var _b = [this.center.x, this.center.y], h = _b[0], k = _b[1];
+        var r = this.radius;
+        var A = Math.pow(a, 2) + 1;
+        var B = 2 * a * (b - k) - 2 * h;
+        var C = Math.pow(h, 2) + Math.pow((b - k), 2) - Math.pow(r, 2);
+        var D = Math.pow(B, 2) - 4 * A * C;
+        if (D < 0)
+            return [new Point(NaN, NaN), new Point(NaN, NaN)];
+        var x1 = (-B + Math.sqrt(D)) / (2 * A);
+        var x2 = (-B - Math.sqrt(D)) / (2 * A);
+        return [new Point(x1, linear.getY(x1)), new Point(x2, linear.getY(x2))];
+    };
     Circle.prototype.draw = function () {
         // @ts-ignore
         stroke(this.strokeColor);
@@ -295,6 +314,12 @@ var LinearFunction = /** @class */ (function (_super) {
         var a = (p2.y - p1.y) / (p2.x - p1.x);
         var b = p1.y - a * p1.x;
         return new LinearFunction(a, b);
+    };
+    LinearFunction.prototype.getIntersectionWithLinearFunction = function (linear) {
+        var _a = this.args, a1 = _a[0], b1 = _a[1];
+        var _b = linear.args, a2 = _b[0], b2 = _b[1];
+        var x = (b2 - b1) / (a1 - a2);
+        return new Point(x, this.getY(x));
     };
     LinearFunction.prototype.magnify = function (center, magnification) {
         var l1 = new Line(center, new Point(-5, this.getY(-5)));

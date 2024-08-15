@@ -19,6 +19,7 @@ class MasterMath {
   min: number;
   max: number;
   backgroundColor: [number, number, number, number] = [30, 30, 30, 255];
+  fixedMousePointer: Point;
 
   constructor(focus: Point, scope: number = 1, min: number, max: number) {
     this.focus = focus;
@@ -39,6 +40,13 @@ class MasterMath {
     translate(this.center.x, this.center.y);
     // @ts-ignore
     scale(1, -1);
+
+    this.fixedMousePointer = new Point(
+      // @ts-ignore
+      mouseX - this.center.x,
+      // @ts-ignore
+      -(mouseY - this.center.y)
+    ).magnify(this.focus, 1 / this.scope);
 
     // @ts-ignore
     stroke("white");
@@ -233,6 +241,20 @@ class Circle extends MasterShape {
     this.radius = radius;
   }
 
+  getIntersectionWithLinearFunction(linear: LinearFunction) {
+    const [a, b, c] = linear.args;
+    const [h, k] = [this.center.x, this.center.y];
+    const r = this.radius;
+    const A = a ** 2 + 1;
+    const B = 2 * a * (b - k) - 2 * h;
+    const C = h ** 2 + (b - k) ** 2 - r ** 2;
+    const D = B ** 2 - 4 * A * C;
+    if (D < 0) return [new Point(NaN, NaN), new Point(NaN, NaN)];
+    const x1 = (-B + Math.sqrt(D)) / (2 * A);
+    const x2 = (-B - Math.sqrt(D)) / (2 * A);
+    return [new Point(x1, linear.getY(x1)), new Point(x2, linear.getY(x2))];
+  }
+
   draw(): void {
     // @ts-ignore
     stroke(this.strokeColor);
@@ -350,6 +372,13 @@ class LinearFunction extends MasterFunction {
     const a = (p2.y - p1.y) / (p2.x - p1.x);
     const b = p1.y - a * p1.x;
     return new LinearFunction(a, b);
+  }
+
+  getIntersectionWithLinearFunction(linear: LinearFunction): Point {
+    const [a1, b1] = this.args;
+    const [a2, b2] = linear.args;
+    const x = (b2 - b1) / (a1 - a2);
+    return new Point(x, this.getY(x));
   }
 
   magnify(center: Point, magnification: number): LinearFunction {
