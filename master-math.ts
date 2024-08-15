@@ -329,8 +329,35 @@ class MasterFunction {
     return new MasterFunction(slope, y - slope * x);
   }
 
+  translate(dx: number, dy: number): MasterFunction {
+    const { length } = this.args;
+    const n = length - 1;
+    // console.log("x^" + n);
+    let newArgs = Array(length).fill(0);
+
+    newArgs[n] += dy;
+
+    for (let i = 0; i < length; i++) {
+      // console.log(`${this.args[i]}(x-${dx})^${n - i}`);
+      for (let k = 0; k < length - i; k++) {
+        // console.log(
+        //   `${this.args[i]}(${n - i}C${k}(${-dx})^${k}x^${n - i - k})`
+        // );
+        // console.log(combination(n - i, k) * this.args[i] * Math.pow(-dx, k));
+        newArgs[length - (n - i - k) - 1] +=
+          combination(n - i, k) * this.args[i] * Math.pow(-dx, k);
+      }
+    }
+
+    return new MasterFunction(...newArgs);
+  }
+
   magnify(center: Point, magnification: number): MasterFunction {
-    throw new Error("Method not implemented.");
+    const scaledCoeffs = this.translate(-center.x, -center.y).args.map(
+      (coeff, i) => coeff / Math.pow(magnification, this.args.length - i - 2)
+    );
+
+    return new MasterFunction(...scaledCoeffs);
   }
 
   draw(min: number, max: number): void {
@@ -480,6 +507,12 @@ class QuadraticFunction extends MasterFunction {
     const p2 = l2.getDividingPoint(-magnification, magnification - 1);
     const p3 = l3.getDividingPoint(-magnification, magnification - 1);
     return QuadraticFunction.estimateQuadraticByThreePoints(p1, p2, p3);
+  }
+}
+
+class CubicFunction extends MasterFunction {
+  constructor(a: number, b: number, c: number, d: number) {
+    super(a, b, c, d);
   }
 }
 

@@ -278,8 +278,29 @@ var MasterFunction = /** @class */ (function () {
         var slope = diffFunc.getY(x);
         return new MasterFunction(slope, y - slope * x);
     };
+    MasterFunction.prototype.translate = function (dx, dy) {
+        var length = this.args.length;
+        var n = length - 1;
+        // console.log("x^" + n);
+        var newArgs = Array(length).fill(0);
+        newArgs[n] += dy;
+        for (var i = 0; i < length; i++) {
+            // console.log(`${this.args[i]}(x-${dx})^${n - i}`);
+            for (var k = 0; k < length - i; k++) {
+                // console.log(
+                //   `${this.args[i]}(${n - i}C${k}(${-dx})^${k}x^${n - i - k})`
+                // );
+                // console.log(combination(n - i, k) * this.args[i] * Math.pow(-dx, k));
+                newArgs[length - (n - i - k) - 1] +=
+                    combination(n - i, k) * this.args[i] * Math.pow(-dx, k);
+            }
+        }
+        return new (MasterFunction.bind.apply(MasterFunction, __spreadArray([void 0], newArgs, false)))();
+    };
     MasterFunction.prototype.magnify = function (center, magnification) {
-        throw new Error("Method not implemented.");
+        var _this = this;
+        var scaledCoeffs = this.translate(-center.x, -center.y).args.map(function (coeff, i) { return coeff / Math.pow(magnification, _this.args.length - i - 2); });
+        return new (MasterFunction.bind.apply(MasterFunction, __spreadArray([void 0], scaledCoeffs, false)))();
     };
     MasterFunction.prototype.draw = function (min, max) {
         // @ts-ignore
@@ -401,6 +422,13 @@ var QuadraticFunction = /** @class */ (function (_super) {
         return QuadraticFunction.estimateQuadraticByThreePoints(p1, p2, p3);
     };
     return QuadraticFunction;
+}(MasterFunction));
+var CubicFunction = /** @class */ (function (_super) {
+    __extends(CubicFunction, _super);
+    function CubicFunction(a, b, c, d) {
+        return _super.call(this, a, b, c, d) || this;
+    }
+    return CubicFunction;
 }(MasterFunction));
 var Vector2 = /** @class */ (function () {
     function Vector2(x, y) {
