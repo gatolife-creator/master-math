@@ -44,9 +44,10 @@ var MasterMath = /** @class */ (function () {
             _this.onMouseWheel(event);
         });
     }
-    MasterMath.prototype.env = function () {
+    MasterMath.prototype.env = function (disableRedraw) {
         // @ts-ignore
-        background.apply(void 0, this.backgroundColor);
+        if (!disableRedraw)
+            background.apply(void 0, this.backgroundColor);
         // @ts-ignore
         translate(this.center.x, this.center.y);
         // @ts-ignore
@@ -263,6 +264,9 @@ var MasterFunction = /** @class */ (function () {
         }
         return tmp;
     };
+    MasterFunction.prototype.getPoint = function (x) {
+        return new Point(x, this.getY(x));
+    };
     MasterFunction.prototype.differentiate = function () {
         var length = this.args.length;
         var newArgs = [];
@@ -281,26 +285,24 @@ var MasterFunction = /** @class */ (function () {
     MasterFunction.prototype.translate = function (dx, dy) {
         var length = this.args.length;
         var n = length - 1;
-        // console.log("x^" + n);
         var newArgs = Array(length).fill(0);
         newArgs[n] += dy;
         for (var i = 0; i < length; i++) {
-            // console.log(`${this.args[i]}(x-${dx})^${n - i}`);
             for (var k = 0; k < length - i; k++) {
-                // console.log(
-                //   `${this.args[i]}(${n - i}C${k}(${-dx})^${k}x^${n - i - k})`
-                // );
-                // console.log(combination(n - i, k) * this.args[i] * Math.pow(-dx, k));
                 newArgs[length - (n - i - k) - 1] +=
                     combination(n - i, k) * this.args[i] * Math.pow(-dx, k);
             }
         }
-        return new (MasterFunction.bind.apply(MasterFunction, __spreadArray([void 0], newArgs, false)))();
+        var newFunction = new (MasterFunction.bind.apply(MasterFunction, __spreadArray([void 0], newArgs, false)))();
+        newFunction.setGraphingColor(this.strokeColor, this.strokeWeight, this.fillColor, this.noFill);
+        return newFunction;
     };
     MasterFunction.prototype.magnify = function (center, magnification) {
         var _this = this;
         var scaledCoeffs = this.translate(-center.x, -center.y).args.map(function (coeff, i) { return coeff / Math.pow(magnification, _this.args.length - i - 2); });
-        return new (MasterFunction.bind.apply(MasterFunction, __spreadArray([void 0], scaledCoeffs, false)))();
+        var newFunction = new (MasterFunction.bind.apply(MasterFunction, __spreadArray([void 0], scaledCoeffs, false)))();
+        newFunction.setGraphingColor(this.strokeColor, this.strokeWeight, this.fillColor, this.noFill);
+        return newFunction;
     };
     MasterFunction.prototype.draw = function (min, max) {
         // @ts-ignore
@@ -428,6 +430,16 @@ var CubicFunction = /** @class */ (function (_super) {
     function CubicFunction(a, b, c, d) {
         return _super.call(this, a, b, c, d) || this;
     }
+    CubicFunction.prototype.getExtremum = function () {
+        var differentiated = this.differentiate();
+        var _a = differentiated.args, a = _a[0], b = _a[1], c = _a[2];
+        var D = Math.pow(b, 2) - 4 * a * c;
+        if (D <= 0)
+            return [new Point(NaN, NaN), new Point(NaN, NaN)];
+        var x1 = (-b - Math.sqrt(D)) / (2 * a);
+        var x2 = (-b + Math.sqrt(D)) / (2 * a);
+        return [new Point(x1, this.getY(x1)), new Point(x2, this.getY(x2))];
+    };
     return CubicFunction;
 }(MasterFunction));
 var Vector2 = /** @class */ (function () {

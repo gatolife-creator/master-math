@@ -33,9 +33,10 @@ class MasterMath {
     });
   }
 
-  env(): void {
+  env(disableRedraw: boolean): void {
     // @ts-ignore
-    background(...this.backgroundColor);
+    if (!disableRedraw) background(...this.backgroundColor);
+
     // @ts-ignore
     translate(this.center.x, this.center.y);
     // @ts-ignore
@@ -312,6 +313,10 @@ class MasterFunction {
     return tmp;
   }
 
+  getPoint(x: number): Point {
+    return new Point(x, this.getY(x));
+  }
+
   differentiate(): MasterFunction {
     const { length } = this.args;
     const newArgs = [];
@@ -332,24 +337,25 @@ class MasterFunction {
   translate(dx: number, dy: number): MasterFunction {
     const { length } = this.args;
     const n = length - 1;
-    // console.log("x^" + n);
     let newArgs = Array(length).fill(0);
 
     newArgs[n] += dy;
 
     for (let i = 0; i < length; i++) {
-      // console.log(`${this.args[i]}(x-${dx})^${n - i}`);
       for (let k = 0; k < length - i; k++) {
-        // console.log(
-        //   `${this.args[i]}(${n - i}C${k}(${-dx})^${k}x^${n - i - k})`
-        // );
-        // console.log(combination(n - i, k) * this.args[i] * Math.pow(-dx, k));
         newArgs[length - (n - i - k) - 1] +=
           combination(n - i, k) * this.args[i] * Math.pow(-dx, k);
       }
     }
+    const newFunction = new MasterFunction(...newArgs);
+    newFunction.setGraphingColor(
+      this.strokeColor,
+      this.strokeWeight,
+      this.fillColor,
+      this.noFill
+    );
 
-    return new MasterFunction(...newArgs);
+    return newFunction;
   }
 
   magnify(center: Point, magnification: number): MasterFunction {
@@ -357,7 +363,14 @@ class MasterFunction {
       (coeff, i) => coeff / Math.pow(magnification, this.args.length - i - 2)
     );
 
-    return new MasterFunction(...scaledCoeffs);
+    const newFunction = new MasterFunction(...scaledCoeffs);
+    newFunction.setGraphingColor(
+      this.strokeColor,
+      this.strokeWeight,
+      this.fillColor,
+      this.noFill
+    );
+    return newFunction;
   }
 
   draw(min: number, max: number): void {
@@ -513,6 +526,16 @@ class QuadraticFunction extends MasterFunction {
 class CubicFunction extends MasterFunction {
   constructor(a: number, b: number, c: number, d: number) {
     super(a, b, c, d);
+  }
+
+  getExtremum(): [Point, Point] {
+    const differentiated = this.differentiate();
+    const [a, b, c] = differentiated.args;
+    const D = b ** 2 - 4 * a * c;
+    if (D <= 0) return [new Point(NaN, NaN), new Point(NaN, NaN)];
+    const x1 = (-b - Math.sqrt(D)) / (2 * a);
+    const x2 = (-b + Math.sqrt(D)) / (2 * a);
+    return [new Point(x1, this.getY(x1)), new Point(x2, this.getY(x2))];
   }
 }
 
