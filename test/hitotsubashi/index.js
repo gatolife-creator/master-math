@@ -4,7 +4,6 @@ const height = window.innerHeight;
 const focus = new Point(0, 0);
 const masterMath = new MasterMath(focus, scope, -width / 2, width / 2);
 
-let flag = true;
 let a = 0.01;
 let speed = 0.01;
 

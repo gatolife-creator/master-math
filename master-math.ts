@@ -510,17 +510,6 @@ class QuadraticFunction extends MasterFunction {
     }
     return [new Point(x1, this.getY(x1)), new Point(x2, this.getY(x2))];
   }
-
-  magnify(center: Point, magnification: number): QuadraticFunction {
-    const l1 = new Line(center, this.getYIntercept());
-    const l2 = new Line(center, new Point(-5, this.getY(-5)));
-    const l3 = new Line(center, new Point(5, this.getY(5)));
-
-    const p1 = l1.getDividingPoint(-magnification, magnification - 1);
-    const p2 = l2.getDividingPoint(-magnification, magnification - 1);
-    const p3 = l3.getDividingPoint(-magnification, magnification - 1);
-    return QuadraticFunction.estimateQuadraticByThreePoints(p1, p2, p3);
-  }
 }
 
 class CubicFunction extends MasterFunction {

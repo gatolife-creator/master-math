@@ -414,15 +414,6 @@ var QuadraticFunction = /** @class */ (function (_super) {
         }
         return [new Point(x1, this.getY(x1)), new Point(x2, this.getY(x2))];
     };
-    QuadraticFunction.prototype.magnify = function (center, magnification) {
-        var l1 = new Line(center, this.getYIntercept());
-        var l2 = new Line(center, new Point(-5, this.getY(-5)));
-        var l3 = new Line(center, new Point(5, this.getY(5)));
-        var p1 = l1.getDividingPoint(-magnification, magnification - 1);
-        var p2 = l2.getDividingPoint(-magnification, magnification - 1);
-        var p3 = l3.getDividingPoint(-magnification, magnification - 1);
-        return QuadraticFunction.estimateQuadraticByThreePoints(p1, p2, p3);
-    };
     return QuadraticFunction;
 }(MasterFunction));
 var CubicFunction = /** @class */ (function (_super) {
